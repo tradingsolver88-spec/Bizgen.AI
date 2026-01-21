@@ -1,5 +1,9 @@
 {
-  "name": "AI Small Business Idea Generator",
-  "description": "A high-end SaaS platform for entrepreneurs to generate, save, and export personalized business ideas using advanced AI reasoning.",
+  "name": "BizGen AI Generator",
+  "short_name": "BizGen",
+  "description": "AI-powered personalized business idea generator for Pakistani entrepreneurs.",
+  "theme_color": "#4f46e5",
+  "background_color": "#f8fafc",
+  "display": "standalone",
   "requestFramePermissions": []
 }

@@ -4,15 +4,26 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   define: {
-    // This allows the app to access the API key in the browser
-    'process.env.API_KEY': JSON.stringify(process.env.API_KEY || ''),
-    'process.env': {}
+    // This allows the Gemini API to access your key securely
+    'process.env.API_KEY': JSON.stringify(process.env.API_KEY || '')
   },
   server: {
-    historyApiFallback: true,
+    port: 3000,
+    open: true,
   },
   build: {
     outDir: 'dist',
-    sourcemap: false
+    minify: 'terser',
+    cssMinify: true,
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-icons': ['lucide-react'],
+          'vendor-charts': ['recharts']
+        }
+      }
+    }
   }
 });
