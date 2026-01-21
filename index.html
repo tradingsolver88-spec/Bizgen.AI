@@ -18,6 +18,7 @@
           padding: 0; 
           -webkit-tap-highlight-color: transparent;
           background-color: #f8fafc;
+          overflow-x: hidden;
         }
         #root { 
             min-height: 100vh; 
@@ -25,14 +26,11 @@
             flex-direction: column; 
         }
         
-        /* Mobile Smoothness */
+        /* Smooth scrolling and text adjustment */
         html { 
             scroll-behavior: smooth; 
             -webkit-text-size-adjust: 100%;
         }
-
-        /* Prevent horizontal overflow on mobile */
-        .overflow-x-hidden { overflow-x: hidden; }
 
         /* Custom Scrollbar */
         ::-webkit-scrollbar {
@@ -45,14 +43,14 @@
             background: #cbd5e1;
             border-radius: 10px;
         }
-        
-        /* High-end Animations */
-        .animate-in {
-            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
+
+        /* Animations */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-in {
+            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -74,7 +72,7 @@
 }
 </script>
 </head>
-<body class="bg-slate-50 text-slate-900 overflow-x-hidden">
+<body class="bg-slate-50 text-slate-900">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
 </body>

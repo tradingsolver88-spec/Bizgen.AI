@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import LandingPage from './views/LandingPage';
 import Dashboard from './views/Dashboard';
@@ -17,7 +17,6 @@ const App: React.FC = () => {
       const saved = localStorage.getItem('biz_user');
       return saved ? JSON.parse(saved) : null;
     } catch (e) {
-      console.error("Failed to parse user from storage", e);
       return null;
     }
   });
@@ -27,7 +26,6 @@ const App: React.FC = () => {
       const saved = localStorage.getItem('biz_all_users');
       return saved ? JSON.parse(saved) : [];
     } catch (e) {
-      console.error("Failed to parse all_users from storage", e);
       return [];
     }
   });
@@ -37,7 +35,6 @@ const App: React.FC = () => {
       const saved = localStorage.getItem('biz_payments');
       return saved ? JSON.parse(saved) : [];
     } catch (e) {
-      console.error("Failed to parse payments from storage", e);
       return [];
     }
   });
@@ -47,23 +44,23 @@ const App: React.FC = () => {
       const saved = localStorage.getItem('biz_saved_ideas');
       return saved ? JSON.parse(saved) : [];
     } catch (e) {
-      console.error("Failed to parse saved_ideas from storage", e);
       return [];
     }
   });
 
-  // Sync session and "Database"
+  // Simplified Persistent Sync
   useEffect(() => {
     if (user) {
       localStorage.setItem('biz_user', JSON.stringify(user));
+      // Sync user back into the master user list
       setAllUsers(prev => {
-        const exists = prev.find(u => u.email.toLowerCase() === user.email.toLowerCase());
-        if (!exists) {
-          const updated = [...prev, user];
-          localStorage.setItem('biz_all_users', JSON.stringify(updated));
-          return updated;
+        const index = prev.findIndex(u => u.email.toLowerCase() === user.email.toLowerCase());
+        const updated = [...prev];
+        if (index > -1) {
+          updated[index] = { ...updated[index], ...user };
+        } else {
+          updated.push(user);
         }
-        const updated = prev.map(u => u.email.toLowerCase() === user.email.toLowerCase() ? { ...u, ...user } : u);
         localStorage.setItem('biz_all_users', JSON.stringify(updated));
         return updated;
       });
@@ -82,7 +79,6 @@ const App: React.FC = () => {
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('biz_user');
   };
 
   const handleAddPayment = (req: Omit<PaymentRequest, 'id' | 'status' | 'timestamp'>) => {
@@ -103,30 +99,24 @@ const App: React.FC = () => {
     if (!req) return;
 
     setPaymentRequests(prev => prev.map(r => r.id === id ? { ...r, status: 'approved' } : r));
-    const creditBonus = 100;
-
+    
     setAllUsers(prev => prev.map(u => {
       if (u.email.toLowerCase() === req.userEmail.toLowerCase()) {
-        return { 
+        const updated = { 
           ...u, 
           isPaid: true, 
-          planType: 'paid',
-          paymentStatus: 'approved', 
-          credits: (u.credits || 0) + creditBonus 
+          planType: 'paid' as const,
+          paymentStatus: 'approved' as const, 
+          credits: (u.credits || 0) + 100 
         };
+        // If current logged in user is this person, update their session too
+        if (user && user.email.toLowerCase() === u.email.toLowerCase()) {
+          setUser(updated);
+        }
+        return updated;
       }
       return u;
     }));
-    
-    if (user && user.email.toLowerCase() === req.userEmail.toLowerCase()) {
-      setUser({ 
-        ...user, 
-        isPaid: true, 
-        planType: 'paid',
-        paymentStatus: 'approved', 
-        credits: (user.credits || 0) + creditBonus 
-      });
-    }
   };
 
   const handleRejectPayment = (id: string) => {
@@ -140,9 +130,7 @@ const App: React.FC = () => {
   const handleDeleteUser = (email: string) => {
     if (window.confirm(`Kya aap waqai ${email} ko system se delete karna chahte hain?`)) {
       setAllUsers(prev => prev.filter(u => u.email.toLowerCase() !== email.toLowerCase()));
-      if (user && user.email.toLowerCase() === email.toLowerCase()) {
-        logout();
-      }
+      if (user && user.email.toLowerCase() === email.toLowerCase()) logout();
     }
   };
 
@@ -178,7 +166,7 @@ const App: React.FC = () => {
 
   return (
     <Router>
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col bg-slate-50">
         <Navbar user={user} onLogout={logout} />
         <main className="flex-grow">
           <Routes>
@@ -213,24 +201,31 @@ const App: React.FC = () => {
           </Routes>
         </main>
         <footer className="bg-slate-900 text-white py-12">
-          <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-10">
             <div>
-              <h3 className="text-xl font-bold mb-4">BizGen AI</h3>
-              <p className="text-slate-400 text-sm">Building the future of entrepreneurship, one idea at a time.</p>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="bg-indigo-600 p-1.5 rounded-lg">
+                  <span className="text-white font-black text-xs">AI</span>
+                </div>
+                <h3 className="text-xl font-bold">BizGen AI</h3>
+              </div>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                Building the future of entrepreneurship in Pakistan. We help visionaries turn skills into sustainable businesses.
+              </p>
             </div>
-            <div className="flex flex-col gap-2">
-              <h4 className="font-bold text-slate-200 uppercase text-xs tracking-widest mb-2">Product</h4>
-              <button className="text-slate-400 hover:text-white text-sm text-left">How it works</button>
-              <button className="text-slate-400 hover:text-white text-sm text-left">Pricing</button>
+            <div className="flex flex-col gap-3">
+              <h4 className="font-bold text-indigo-400 uppercase text-[10px] tracking-[0.2em] mb-2">Navigation</h4>
+              <Link to="/pricing" className="text-slate-400 hover:text-white text-sm transition-colors">Pricing</Link>
+              <Link to="/login" className="text-slate-400 hover:text-white text-sm transition-colors">Login / Join</Link>
             </div>
-            <div className="flex flex-col gap-2">
-              <h4 className="font-bold text-slate-200 uppercase text-xs tracking-widest mb-2">Support</h4>
-              <button className="text-slate-400 hover:text-white text-sm text-left">FAQ</button>
-              <button className="text-slate-400 hover:text-white text-sm text-left">Contact Us</button>
+            <div className="flex flex-col gap-3">
+              <h4 className="font-bold text-indigo-400 uppercase text-[10px] tracking-[0.2em] mb-2">Legal</h4>
+              <button className="text-slate-400 hover:text-white text-sm text-left transition-colors">Privacy Policy</button>
+              <button className="text-slate-400 hover:text-white text-sm text-left transition-colors">Terms of Service</button>
             </div>
           </div>
-          <div className="max-w-7xl mx-auto px-4 mt-12 pt-8 border-t border-slate-800 text-center text-slate-500 text-xs">
-            &copy; 2024 AI Small Business Idea Generator. Handcrafted for founders.
+          <div className="max-w-7xl mx-auto px-4 mt-12 pt-8 border-t border-slate-800 text-center text-slate-500 text-[10px] font-medium">
+            &copy; {new Date().getFullYear()} BizGen AI. Handcrafted with passion in Pakistan.
           </div>
         </footer>
       </div>

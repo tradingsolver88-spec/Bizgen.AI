@@ -1,7 +1,7 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import { BusinessIdea, UserPreferences } from "../types";
 
+// Ensure process.env.API_KEY is properly defined in your environment
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export async function generateBusinessIdeas(prefs: UserPreferences): Promise<BusinessIdea[]> {
@@ -49,7 +49,7 @@ export async function generateBusinessIdeas(prefs: UserPreferences): Promise<Bus
   });
 
   try {
-    const rawJson = response.text;
+    const rawJson = response.text.trim();
     const parsed = JSON.parse(rawJson);
     return parsed.map((item: any) => ({
       ...item,
@@ -57,8 +57,8 @@ export async function generateBusinessIdeas(prefs: UserPreferences): Promise<Bus
       generatedAt: new Date().toISOString()
     }));
   } catch (error) {
-    console.error("Failed to parse Gemini response", error);
-    throw new Error("Idea generate karne mein masla hua.");
+    console.error("Gemini response parsing error:", error, "Raw text:", response.text);
+    throw new Error("Idea generate karne mein takneeki masla hua. Please dubara koshish karein.");
   }
 }
 
@@ -74,5 +74,5 @@ export async function refineIdea(originalIdea: BusinessIdea, userQuestion: strin
     contents: prompt
   });
 
-  return response.text || "Sorry, main is waqt madad nahi kar sakta.";
+  return response.text || "Maaf kijiye, main is waqt is sawal ka jawab nahi de sakta.";
 }
