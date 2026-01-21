@@ -13,23 +13,43 @@ import { User, BusinessIdea, PaymentRequest } from './types';
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(() => {
-    const saved = localStorage.getItem('biz_user');
-    return saved ? JSON.parse(saved) : null;
+    try {
+      const saved = localStorage.getItem('biz_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) {
+      console.error("Failed to parse user from storage", e);
+      return null;
+    }
   });
 
   const [allUsers, setAllUsers] = useState<User[]>(() => {
-    const saved = localStorage.getItem('biz_all_users');
-    return saved ? JSON.parse(saved) : [];
+    try {
+      const saved = localStorage.getItem('biz_all_users');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      console.error("Failed to parse all_users from storage", e);
+      return [];
+    }
   });
 
   const [paymentRequests, setPaymentRequests] = useState<PaymentRequest[]>(() => {
-    const saved = localStorage.getItem('biz_payments');
-    return saved ? JSON.parse(saved) : [];
+    try {
+      const saved = localStorage.getItem('biz_payments');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      console.error("Failed to parse payments from storage", e);
+      return [];
+    }
   });
 
   const [savedIdeas, setSavedIdeas] = useState<BusinessIdea[]>(() => {
-    const saved = localStorage.getItem('biz_saved_ideas');
-    return saved ? JSON.parse(saved) : [];
+    try {
+      const saved = localStorage.getItem('biz_saved_ideas');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      console.error("Failed to parse saved_ideas from storage", e);
+      return [];
+    }
   });
 
   // Sync session and "Database"
@@ -43,7 +63,6 @@ const App: React.FC = () => {
           localStorage.setItem('biz_all_users', JSON.stringify(updated));
           return updated;
         }
-        // Strict mapping to ensure persistent usage counters are never lost
         const updated = prev.map(u => u.email.toLowerCase() === user.email.toLowerCase() ? { ...u, ...user } : u);
         localStorage.setItem('biz_all_users', JSON.stringify(updated));
         return updated;
@@ -119,7 +138,7 @@ const App: React.FC = () => {
   };
 
   const handleDeleteUser = (email: string) => {
-    if (window.confirm(`Kya aap waqai ${email} ko system se delete karna chahte hain? Iska tamam data khatam ho jaye ga.`)) {
+    if (window.confirm(`Kya aap waqai ${email} ko system se delete karna chahte hain?`)) {
       setAllUsers(prev => prev.filter(u => u.email.toLowerCase() !== email.toLowerCase()));
       if (user && user.email.toLowerCase() === email.toLowerCase()) {
         logout();
@@ -203,13 +222,11 @@ const App: React.FC = () => {
               <h4 className="font-bold text-slate-200 uppercase text-xs tracking-widest mb-2">Product</h4>
               <button className="text-slate-400 hover:text-white text-sm text-left">How it works</button>
               <button className="text-slate-400 hover:text-white text-sm text-left">Pricing</button>
-              <button className="text-slate-400 hover:text-white text-sm text-left">Success Stories</button>
             </div>
             <div className="flex flex-col gap-2">
               <h4 className="font-bold text-slate-200 uppercase text-xs tracking-widest mb-2">Support</h4>
               <button className="text-slate-400 hover:text-white text-sm text-left">FAQ</button>
               <button className="text-slate-400 hover:text-white text-sm text-left">Contact Us</button>
-              <button className="text-slate-400 hover:text-white text-sm text-left">Privacy Policy</button>
             </div>
           </div>
           <div className="max-w-7xl mx-auto px-4 mt-12 pt-8 border-t border-slate-800 text-center text-slate-500 text-xs">

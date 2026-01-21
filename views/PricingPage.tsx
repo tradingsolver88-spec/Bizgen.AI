@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check, Zap, Rocket, ShieldCheck, X, Send, CreditCard, Copy, Info } from 'lucide-react';
@@ -84,7 +83,7 @@ const PricingPage: React.FC<PricingPageProps> = ({ user, onPaymentSubmit }) => {
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-8 items-stretch max-w-4xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch max-w-4xl mx-auto">
         {plans.map((plan, idx) => (
           <div 
             key={idx} 
